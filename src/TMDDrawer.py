@@ -1,17 +1,20 @@
-#!/usr/local/bin/python3
-import cairo
+#!/usr/bin/env python3
+import cairocffi as cairo
 
 A4 = [2480.0, 3508.0]
 B4 = [2150.0, 3248.0]
 A3 = [3508.0, 4960.0]
 B3 = [3248.0, 4300.0]
-PDFFileName = 'test.svg'  # DEBUG
-TestList = ['aguai ', chr(119056), chr(119057), '1m', 'Hanako']  # DEBUG
 FontSize = 50
-#currentSurface = cairo.Context(cairo.PDFSurface(PDFFileName, A4[0], A4[1]))
-currentSurface = cairo.Context(cairo.SVGSurface(PDFFileName, A4[0], A4[1]))
-currentSurface.set_source_rgb(0, 0, 0)
-currentSurface.set_line_width(1)
+
+
+def create_surface(filename=None):
+    out = filename or 'test.svg'
+    surface = cairo.SVGSurface(out, A4[0], A4[1])
+    ctx = cairo.Context(surface)
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.set_line_width(1)
+    return ctx
 
 
 def barCoord(n):
@@ -62,5 +65,7 @@ def DrawChord(ThisPageChordList, CSF):
 
 
 if __name__ == '__main__':
-    DrawBasicLayout(currentSurface)
-    DrawChord(TestList, currentSurface)
+    TestList = ['aguai ', chr(119056), chr(119057), '1m', 'Hanako']  # DEBUG
+    ctx = create_surface('test.svg')
+    DrawBasicLayout(ctx)
+    DrawChord(TestList, ctx)

@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "tmdlang"
+version = "0.1.0"
+description = "Timebase MarkDown Language — a markup language for timed event flows such as band scores"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+dependencies = [
+    "cairocffi",
+]
+
+[project.scripts]
+tmd = "tmdlang.tmd:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

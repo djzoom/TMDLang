@@ -2,17 +2,17 @@ import re
 from sys import exit
 from fractions import Fraction as frac
 
-PartSequencePattern = re.compile("\-\>([^\#]+)->\#")
+PartSequencePattern = re.compile(r"\-\>([^\#]+)->\#")
 PartContentPattern = re.compile(
     r"(?P<partname>\S*)?:(?P<InstrumentName>\S*)@(?P<Timing>[^\{]*)\{(?P<PartContent>[^}]+)\}")
-SongNamePattern = re.compile("\s*\*\*\s+?(?P<SongName>[^\*]+)\s+?\*\*\s*")
-TempoPattern = re.compile("\s*?\!\s*?\=\s*?(\d\d\d?\.?\d?\d?)\s*?\n")
-KeyPattern = re.compile("\s*?\?\s*\=\s*(?P<Key>[ABCDEFGabcdefg][',]?m?)\s*?\n")
+SongNamePattern = re.compile(r"\s*\*\*\s+?(?P<SongName>[^\*]+)\s+?\*\*\s*")
+TempoPattern = re.compile(r"\s*?\!\s*?\=\s*?(\d\d\d?\.?\d?\d?)\s*?\n")
+KeyPattern = re.compile(r"\s*?\?\s*\=\s*(?P<Key>[ABCDEFGabcdefg][',]?m?)\s*?\n")
 PerChordPattern = re.compile(
-    "\[(?P<Root>[1-7])(?P<RootAccidental>['|,])?(?P<Tonic>maj|Maj|aug|dim|m|M)?(P<Ext>[sus|alt])?(?P<TensionNote>[^\]|^\/]*)?[\/]?(?P<Bass>[1-7])?(?P<BassAccidental>['|,])?\]")
+    r"\[(?P<Root>[1-7])(?P<RootAccidental>['|,])?(?P<Tonic>maj|Maj|aug|dim|m|M)?(?P<Ext>(?:sus|alt))?(?P<TensionNote>[^\]\/]*)?[\/]?(?P<Bass>[1-7])?(?P<BassAccidental>['|,])?\]")
 
 SignaturePattern = re.compile(
-    "\<(?P<BeatsPerBar>\d\d?)\/(?P<TickBase>\d\d?)\>\s*[\n\r]")
+    r"\<(?P<BeatsPerBar>\d\d?)\/(?P<TickBase>\d\d?)\>\s*[\n\r]")
 
 
 def TempoGetter(inputFile):
