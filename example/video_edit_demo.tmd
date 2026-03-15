@@ -1,0 +1,135 @@
+::VIDEO::
+** 产品宣传短片 **
+! = 120
+<4/4>
+
+~footage: "./footage"
+~audio: "./audio"
+~graphics: "./graphics"
+
+/* ============================================
+   TMDLang Video Edit Demo
+
+   A 60-second product promo assembled from
+   clips, subtitles, BGM and effects — all
+   described in a single versionable text file.
+   ============================================ */
+
+/* ----- HOOK: 0-5s, grab attention ----- */
+
+hook:画面@|0|{
+    <T:0.5s*>
+    [fade_in:0.5s]
+    $footage/product_hero.mp4[0:02-0:04]
+    $footage/product_hero.mp4[0:06-0:08]
+    $footage/lifestyle_01.mp4[0:00-0:02]
+}
+
+hook:字幕@|0|{
+    <T:1s*>
+    "你还在为效率烦恼吗？" -- "试试这个。"
+}
+
+hook:BGM@|0|{
+    <T:5s*>
+    [fade_in:1s] [volume:0.6]
+    $audio/upbeat_bgm.mp3[0:00-0:05]
+}
+
+/* ----- PAIN POINT: 5-15s ----- */
+
+pain:画面@|0|{
+    <T:2s*>
+    $footage/pain_point_01.mp4[0:00-0:04]
+    $footage/pain_point_02.mp4[0:00-0:04]
+    [color_grade:cool]
+    $footage/frustrated_user.mp4[0:00-0:02]
+}
+
+pain:字幕@|0|{
+    <T:2s*>
+    "传统方式太慢了" -- "而且容易出错" -- "有更好的办法"
+}
+
+pain:BGM@|0|{
+    <T:10s*>
+    [volume:0.4]
+    $audio/upbeat_bgm.mp3[0:05-0:15]
+}
+
+/* ----- SOLUTION: 15-35s, product demo ----- */
+
+solution:画面@|0|{
+    <T:2.5s*>
+    [fade_in:0.5s]
+    $footage/product_demo_01.mp4[0:00-0:05]
+    $footage/product_demo_02.mp4[0:00-0:05]
+    $footage/product_demo_03.mp4[0:00-0:05]
+    $footage/screen_recording.mp4[0:00-0:05]
+}
+
+solution:画面特效@|0|{
+    <T:5s*>
+    [zoom_in:2s] -- -- --
+}
+
+solution:字幕@|0|{
+    <T:2.5s*>
+    "一键完成" "智能分析" "实时同步" "全平台支持"
+    -- "效率提升300%" -- --
+}
+
+solution:BGM@|0|{
+    <T:20s*>
+    [volume:0.5]
+    $audio/upbeat_bgm.mp3[0:15-0:35]
+}
+
+/* ----- SOCIAL PROOF: 35-50s ----- */
+
+proof:画面@|0|{
+    <T:2.5s*>
+    $footage/testimonial_01.mp4[0:00-0:05]
+    $footage/testimonial_02.mp4[0:00-0:05]
+    $footage/metrics_screen.mp4[0:00-0:05]
+}
+
+proof:字幕@|0|{
+    <T:5s*>
+    "超过10万用户的选择" "用户满意度98%" "行业领先"
+}
+
+proof:BGM@|0|{
+    <T:15s*>
+    [volume:0.5]
+    $audio/upbeat_bgm.mp3[0:35-0:50]
+}
+
+/* ----- CTA: 50-60s, call to action ----- */
+
+cta:画面@|0|{
+    <T:2s*>
+    [fade_in:0.3s]
+    $footage/product_hero.mp4[0:10-0:14]
+    $graphics/logo_animation.mp4[0:00-0:03]
+    [fade_out:1s]
+    $graphics/cta_screen.mp4[0:00-0:03]
+}
+
+cta:字幕@|0|{
+    <T:2s*>
+    "立即体验" "扫码下载" "限时免费" -- "链接在简介"
+}
+
+cta:BGM@|0|{
+    <T:10s*>
+    [volume:0.6] [fade_out:2s]
+    $audio/upbeat_bgm.mp3[0:50-1:00]
+}
+
+cta:音效@|+2|{
+    <T:1s*>
+    $audio/swoosh.wav - - $audio/ding.wav - -
+}
+
+-> hook -> pain -> solution -> proof -> cta ->#

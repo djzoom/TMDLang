@@ -14,6 +14,135 @@ PerChordPattern = re.compile(
 SignaturePattern = re.compile(
     r"\<(?P<BeatsPerBar>\d\d?)\/(?P<TickBase>\d\d?)\>\s*[\n\r]")
 
+# --- Media patterns (::REMIX:: and ::VIDEO::) ---
+
+MarkupTypePattern = re.compile(r"^\:\:(?P<MarkType>\S+)\:\:\s*?$", re.MULTILINE)
+
+# Asset declarations:  ~assets: "./footage/"  or  ~audio: "./audio/"
+AssetDeclPattern = re.compile(
+    r"~(?P<AssetName>\w+)\s*:\s*\"(?P<AssetPath>[^\"]+)\"")
+
+# Media clip reference:  $audio/song.mp3[00:05.0-00:12.0]  or  $video/clip.mp4
+MediaClipPattern = re.compile(
+    r"\$(?P<ClipPath>[^\[\s\]]+)"
+    r"(?:\[(?P<ClipIn>[\d:.]+)?-(?P<ClipOut>[\d:.]+)?\])?"
+)
+
+# Absolute time base:  <T:0.5s*>  or  <T:frame@30fps*>
+AbsTimeBasePattern = re.compile(
+    r"<T:(?P<TimeVal>[\d.]+)(?P<TimeUnit>s|ms|frame)(?:@(?P<FPS>\d+)fps)?(?:\*?)>"
+)
+
+# BPM-based time base (existing):  <4*>  <16*>
+BpmTimeBasePattern = re.compile(r"<(?P<NoteDiv>[1248]|16|32)\*>")
+
+# Effect directive:  [fade_in:1s]  [crossfade:0.5s]  [volume:0.8]
+EffectPattern = re.compile(
+    r"\[(?P<EffectName>fade_in|fade_out|crossfade|volume|speed|reverse|pitch|echo|"
+    r"cut|dissolve|wipe|zoom_in|zoom_out|pan|rotate|text|color_grade)"
+    r"(?::(?P<EffectParam>[^\]]*))?\]"
+)
+
+# Quoted text (for subtitles/titles):  "some text"
+QuotedTextPattern = re.compile(r'"(?P<Text>[^"]*)"')
+
+# Triple-quoted block (for visual descriptions):  """ ... """
+TripleQuotePattern = re.compile(r'"""(?P<Block>[^"]*(?:"(?!""")[^"]*)*?)"""', re.DOTALL)
+
+# Visual instruction tag:  [特写]  [切]  [推镜]  etc. (inside triple-quote blocks)
+VisualTagPattern = re.compile(r"\[(?P<Tag>[^\]\[]+)\]")
+
+
+def MarkTypeGetter(inputFile):
+    """Get the markup type from the file header (SCORE, REMIX, VIDEO)."""
+    m = MarkupTypePattern.search(inputFile)
+    if m:
+        return m.group('MarkType')
+    return None
+
+
+def AssetDeclGetter(inputFile):
+    """Extract all asset path declarations."""
+    return {m.group('AssetName'): m.group('AssetPath')
+            for m in AssetDeclPattern.finditer(inputFile)}
+
+
+def MediaTrackContentGetter(inputFile):
+    """Extract part blocks with media-aware content parsing.
+
+    Returns a list of dicts, each containing:
+      - partname, InstrumentName (track type), Timing
+      - clips: list of media clip references
+      - effects: list of effect directives
+      - texts: list of quoted text (subtitles)
+      - descriptions: list of triple-quoted visual descriptions
+      - raw: the raw content string
+    """
+    parts = [m.groupdict() for m in re.finditer(PartContentPattern, inputFile)]
+    result = []
+    for p in parts:
+        raw = p['PartContent']
+        # Parse time base
+        abs_tb = AbsTimeBasePattern.search(raw)
+        bpm_tb = BpmTimeBasePattern.search(raw)
+        timebase = None
+        if abs_tb:
+            d = abs_tb.groupdict()
+            timebase = {'mode': 'absolute', 'value': float(d['TimeVal']),
+                        'unit': d['TimeUnit'], 'fps': int(d['FPS']) if d['FPS'] else None}
+        elif bpm_tb:
+            timebase = {'mode': 'bpm', 'note_div': int(bpm_tb.group('NoteDiv'))}
+
+        # Parse media clips
+        clips = []
+        for cm in MediaClipPattern.finditer(raw):
+            clips.append({
+                'path': cm.group('ClipPath'),
+                'in': cm.group('ClipIn'),
+                'out': cm.group('ClipOut'),
+            })
+
+        # Parse effects
+        effects = []
+        for em in EffectPattern.finditer(raw):
+            effects.append({
+                'name': em.group('EffectName'),
+                'param': em.group('EffectParam'),
+            })
+
+        # Parse subtitle texts
+        texts = [tm.group('Text') for tm in QuotedTextPattern.finditer(raw)]
+
+        # Parse visual description blocks
+        descriptions = [dm.group('Block').strip()
+                        for dm in TripleQuotePattern.finditer(raw)]
+
+        # Strip content for rest/dash counting (timing grid)
+        stripped = raw
+        # Remove time base tags
+        stripped = AbsTimeBasePattern.sub('', stripped)
+        stripped = BpmTimeBasePattern.sub('', stripped)
+        # Remove triple-quoted blocks
+        stripped = TripleQuotePattern.sub('', stripped)
+        # Remove comments
+        stripped = re.sub(r'/\*[^*]*\*/', '', stripped)
+        # Tokenize: each non-whitespace token is one time unit
+        tokens = stripped.split()
+
+        result.append({
+            'partname': p['partname'],
+            'InstrumentName': p['InstrumentName'],
+            'Timing': p['Timing'],
+            'timebase': timebase,
+            'clips': clips,
+            'effects': effects,
+            'texts': texts,
+            'descriptions': descriptions,
+            'tokens': tokens,
+            'raw': raw,
+        })
+    return result
+
 
 def TempoGetter(inputFile):
     if len(re.findall(TempoPattern, inputFile)) != 1:

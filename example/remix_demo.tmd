@@ -1,0 +1,93 @@
+::REMIX::
+** Lo-Fi Remix Demo **
+! = 85
+? = C
+<4/4>
+
+~audio: "./audio"
+~samples: "./samples"
+
+/* ============================================
+   TMDLang Audio Remix Demo
+
+   This file demonstrates how TMDLang can be
+   used to remix and arrange audio clips on a
+   BPM-synchronised timeline.
+   ============================================ */
+
+intro:drums@|0|{
+    <4*>
+    $samples/kick.wav - $samples/hat.wav -
+    $samples/kick.wav - $samples/hat.wav $samples/snare.wav
+    $samples/kick.wav - $samples/hat.wav -
+    $samples/kick.wav - $samples/hat.wav $samples/snare.wav
+}
+
+intro:bass@|0|{
+    <4*>
+    [volume:0.7]
+    $audio/bass_loop.wav[0:00-0:08]
+}
+
+intro:pad@|+2|{
+    <4*>
+    [fade_in:2s]
+    $audio/ambient_pad.wav[0:00-0:04]
+}
+
+verse:drums@|0|{
+    <16*>
+    $samples/kick.wav --- $samples/hat.wav --- $samples/snare.wav --- $samples/hat.wav ---
+    $samples/kick.wav --- $samples/hat.wav --- $samples/snare.wav --- $samples/hat.wav ---
+    $samples/kick.wav --- $samples/hat.wav --- $samples/snare.wav --- $samples/hat.wav ---
+    $samples/kick.wav --- $samples/hat.wav --- $samples/snare.wav --- $samples/hat.wav ---
+}
+
+verse:melody@|0|{
+    <4*>
+    $audio/vocal_chop_1.wav[0:00-0:02]
+    $audio/vocal_chop_2.wav[0:00-0:02]
+    $audio/vocal_chop_1.wav[0:02-0:04]
+    $audio/vocal_chop_3.wav[0:00-0:02]
+}
+
+verse:bass@|0|{
+    <4*>
+    [volume:0.8]
+    $audio/bass_loop.wav[0:00-0:08]
+}
+
+chorus:all@|0|{
+    <4*>
+    $audio/chorus_full_mix.wav[0:00-0:16]
+}
+
+chorus:fx@|0|{
+    <4*>
+    [volume:0.3] [echo]
+    $audio/riser_fx.wav[0:00-0:02] - - -
+    - - - -
+    - - - -
+    - - - $audio/impact_fx.wav[0:00-0:01]
+}
+
+breakdown:vinyl@|0|{
+    <T:1s*>
+    [volume:0.5] [speed:0.8x]
+    $audio/vinyl_crackle.wav[0:00-0:08]
+}
+
+breakdown:melody@|0|{
+    <T:1s*>
+    [pitch:-2] [fade_in:1s]
+    $audio/vocal_chop_1.wav[0:00-0:04]
+    $audio/vocal_chop_2.wav[0:00-0:04]
+}
+
+outro:pad@|0|{
+    <4*>
+    [fade_out:4s]
+    $audio/ambient_pad.wav[0:00-0:08]
+}
+
+-> intro -> verse -> chorus -> breakdown -> verse -> chorus -> outro ->#

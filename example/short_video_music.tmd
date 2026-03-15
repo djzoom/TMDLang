@@ -1,0 +1,74 @@
+::VIDEO::
+** 卡点音乐短视频 **
+! = 128
+<4/4>
+
+~footage: "./footage"
+~audio: "./audio"
+
+/* ============================================
+   Beat-Synced Short Video (卡点视频)
+
+   Clips are cut to the beat at 128 BPM.
+   Each <4*> unit = 1 beat = ~0.47s.
+   Each <16*> unit = 1/4 beat = ~0.12s.
+   ============================================ */
+
+drop:画面@|0|{
+    <4*>
+    $footage/clip01.mp4[0:00-0:00.47]
+    $footage/clip02.mp4[0:00-0:00.47]
+    $footage/clip03.mp4[0:00-0:00.47]
+    $footage/clip04.mp4[0:00-0:00.47]
+    $footage/clip05.mp4[0:00-0:00.47]
+    $footage/clip06.mp4[0:00-0:00.47]
+    $footage/clip07.mp4[0:00-0:00.47]
+    $footage/clip08.mp4[0:00-0:00.47]
+}
+
+drop:BGM@|0|{
+    <4*>
+    $audio/edm_drop.mp3[0:30-0:34]
+    - - - -
+}
+
+buildup:画面@|0|{
+    <16*>
+    $footage/fast01.mp4[0:00-0:00.12]
+    $footage/fast02.mp4[0:00-0:00.12]
+    $footage/fast03.mp4[0:00-0:00.12]
+    $footage/fast04.mp4[0:00-0:00.12]
+    $footage/fast05.mp4[0:00-0:00.12]
+    $footage/fast06.mp4[0:00-0:00.12]
+    $footage/fast07.mp4[0:00-0:00.12]
+    $footage/fast08.mp4[0:00-0:00.12]
+    $footage/fast09.mp4[0:00-0:00.12]
+    $footage/fast10.mp4[0:00-0:00.12]
+    $footage/fast11.mp4[0:00-0:00.12]
+    $footage/fast12.mp4[0:00-0:00.12]
+    $footage/fast13.mp4[0:00-0:00.12]
+    $footage/fast14.mp4[0:00-0:00.12]
+    $footage/fast15.mp4[0:00-0:00.12]
+    $footage/fast16.mp4[0:00-0:00.12]
+}
+
+buildup:BGM@|0|{
+    <4*>
+    [volume:0.8]
+    $audio/edm_buildup.mp3[0:26-0:30]
+}
+
+slow:画面@|0|{
+    <T:2s*>
+    [speed:0.5x] [color_grade:warm]
+    $footage/cinematic01.mp4[0:00-0:04]
+    $footage/cinematic02.mp4[0:00-0:04]
+}
+
+slow:BGM@|0|{
+    <T:4s*>
+    [volume:0.5] [fade_in:1s]
+    $audio/ambient_loop.mp3[0:00-0:08]
+}
+
+-> slow -> buildup -> drop -> drop -> buildup -> drop ->#
