@@ -15,6 +15,7 @@ Dependencies: ffmpeg / ffprobe must be on $PATH.
 import json
 import os
 import shlex
+import shutil
 import subprocess
 import tempfile
 
@@ -24,6 +25,19 @@ from TMDTimeline import TimelineEvent, events_by_track, parse_timestamp
 # ---------------------------------------------------------------------------
 # FFmpeg helpers
 # ---------------------------------------------------------------------------
+
+def check_ffmpeg():
+    """Verify that ffmpeg and ffprobe are available on $PATH."""
+    missing = []
+    for tool in ('ffmpeg', 'ffprobe'):
+        if shutil.which(tool) is None:
+            missing.append(tool)
+    if missing:
+        raise RuntimeError(
+            f"Required tool(s) not found: {', '.join(missing)}. "
+            f"Please install ffmpeg (https://ffmpeg.org/) and ensure it is on $PATH."
+        )
+
 
 def _run(cmd, check=True):
     """Run a shell command, return CompletedProcess."""
@@ -69,6 +83,7 @@ class AudioRemixer:
     """Renders a ::REMIX:: timeline into a single mixed-down audio file."""
 
     def __init__(self, events, assets=None, output='remix_output.wav'):
+        check_ffmpeg()
         self.events = events
         self.assets = assets or {}
         self.output = output
@@ -223,6 +238,7 @@ class VideoEditor:
 
     def __init__(self, events, assets=None, output='video_output.mp4',
                  resolution='1920x1080', fps=30):
+        check_ffmpeg()
         self.events = events
         self.assets = assets or {}
         self.output = output
@@ -322,6 +338,40 @@ class VideoEditor:
         elif name == 'rotate':
             deg = param if param else '90'
             vf = f'rotate={deg}*PI/180'
+            cmd = (f'ffmpeg -y -i {shlex.quote(clip_path)} '
+                   f'-vf {shlex.quote(vf)} '
+                   f'-c:v libx264 -preset fast -c:a copy {shlex.quote(out)}')
+        elif name == 'dissolve':
+            # Cross-dissolve is handled at concat stage; mark for later
+            return clip_path
+        elif name == 'cut':
+            # Hard cut is the default between clips; no-op
+            return clip_path
+        elif name == 'wipe':
+            dur = float(param.rstrip('s')) if param else 1.0
+            # Wipe left-to-right using a horizontal gradient
+            vf = (f"geq=lum='if(lt(X,W*T/{dur}),lum(X,Y),0)'"
+                  f":cb='if(lt(X,W*T/{dur}),cb(X,Y),128)'"
+                  f":cr='if(lt(X,W*T/{dur}),cr(X,Y),128)'")
+            cmd = (f'ffmpeg -y -i {shlex.quote(clip_path)} '
+                   f'-vf {shlex.quote(vf)} '
+                   f'-c:v libx264 -preset fast -c:a copy {shlex.quote(out)}')
+        elif name == 'pan':
+            # Pan across the frame: left-to-right, right-to-left, etc.
+            direction = param if param else 'left-to-right'
+            if direction == 'right-to-left':
+                vf = f"crop=iw/2:ih:iw/2-iw/2*t/3:0,scale={self.resolution}"
+            else:
+                vf = f"crop=iw/2:ih:iw/2*t/3:0,scale={self.resolution}"
+            cmd = (f'ffmpeg -y -i {shlex.quote(clip_path)} '
+                   f'-vf {shlex.quote(vf)} '
+                   f'-c:v libx264 -preset fast -c:a copy {shlex.quote(out)}')
+        elif name == 'text':
+            # Overlay text on the video
+            text = param if param else ''
+            vf = (f"drawtext=text={shlex.quote(text)}:fontsize=48:"
+                  f"fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:"
+                  f"borderw=2:bordercolor=black")
             cmd = (f'ffmpeg -y -i {shlex.quote(clip_path)} '
                    f'-vf {shlex.quote(vf)} '
                    f'-c:v libx264 -preset fast -c:a copy {shlex.quote(out)}')
